@@ -1,0 +1,11 @@
+---
+title: "Lab 8 - Linear Regression in R"
+author: "Tara Jagadeesh"
+date: "November 24, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
