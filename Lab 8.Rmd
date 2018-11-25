@@ -9,3 +9,88 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r}
+library(tidyverse)
+
+salmon <- read_csv("salmon_imports.csv")
+```
+
+##1. Exploratory scatterplot
+```{r}
+salmon_exploratory <- ggplot(salmon, aes(x=year, y = salmon_fresh))+
+  geom_point()
+salmon_exploratory
+
+#Looks as though there could be a linear relationship
+#There are, however, a few years which might not fit this trend
+```
+
+##2. Linear regression
+```{r}
+salmon_model <- lm(salmon_fresh ~ year, data = salmon)
+salmon_model
+```
+
+Imports(tons) = 7550(Year) - 14982940   
+
+The slope (7550) means that every year the expected salmon imports increase by 7550 tons. 
+
+The y intercept means that, at year 0, -14982940 tons of imports are expected. This is concerning because import values cannot be negative. When extrapolating this model, this means that at a certain year in the past salmon imports stop declining and reach zero. Thus, this model is only valid for a specified time frame.     
+
+##3. Model diagnostics
+```{r}
+par(mfrow = c(2,2))
+plot(salmon_model)
+```
+The residuals do appear normally distributed, but there are a couple outliers. The residuals also appear potentially heteroscedastic. 
+
+##3. Assessing model fit
+```{r}
+summary(salmon_model)
+```
+
+p < 0.001
+R2 = 0.9478
+
+1. Year significantly predicts salmon imports (p < 0.001)
+2. R2 = 0.9478. This means that 94% of the variance in salmon imports is predicted by year. 
+3. 6% of the variance in salmon imports is NOT explained by year. 
+
+##4. Final graph
+```{r}
+salmon_final_graph <- ggplot(salmon, aes(x = year, y = salmon_fresh)) +
+geom_point() +
+geom_smooth(method = lm, se = TRUE, size = 0.5, color = "gray20") +
+theme_bw() +
+scale_x_continuous(expand = c(0,0), limits = c(1990, 2017)) +
+labs(x = "Year", y = "U.S. Annual Fresh Salmon Imports\n(1,000 pounds)")
+salmon_final_graph
+```
+
+##5. Making predictions
+```{r}
+new_years <- data.frame(year = c(2022, 2024, 2026, 2028)) #Make new dataframe to predict
+
+future_predict <- predict(salmon_model, newdata = new_years, interval = "confidence")
+future_predict
+
+predictions <- data.frame(new_years, future_predict) #Bind the two tables together
+predictions
+```
+##6. Pearson's r
+```{r}
+pearsons_r <- cor.test(salmon$year, salmon$salmon_fresh)
+pearsons_r
+```
+
+pearson's r = 0.974
+
+There is a strong positive correlation between year and tons of salmon imported (Pearson's r = 0.974)
+
+##7. Conclusion statements
+
+Year significantly predicts tons of salmon imported (b = 7550, t(26) = 21.7, p < 0.001) with a strong positive correlation between the two (Pearson’s r = 0.97). The overall model (imports = 7550(year) - 14982940) explains a significant amount of variance in salmon imports (F(1,26) = 471.9, p < 0.001, R^2^ = 0.94).
+
+
+
+
